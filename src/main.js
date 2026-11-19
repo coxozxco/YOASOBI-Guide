@@ -107,7 +107,7 @@ let autoplayEnabled = store("horo-autoplay") !== "0";
 // 單曲循環，預設關閉；開啟時影片播完從頭重播同一首，不跳下一首。
 let repeatOneEnabled = store("horo-repeat-one") === "1";
 // 優先播放卡拉 OK 版，預設開啟；有官方現場版的歌預設看現場版（歌詞改用現場時間）。
-let preferLive = store("horo-prefer-live") !== "0";
+let preferLive = store("yoasobi-prefer-karaoke") === "1";
 // 應援動作示範動畫，預設開啟；關閉時歌詞同步不再顯示動作示範。
 let tipPicEnabled = store("horo-tip-pic") !== "0";
 // 目前這首歌在歌曲頁用 MV／現場版切換鈕選的來源；不保存，換歌就回到設定的預設。
@@ -2142,7 +2142,7 @@ function buildSongShell(){
       </div>
 
       <div class="player-controls" id="player-controls">
-        <button class="venue-toggle bar-chip chant-toggle" id="chant-btn" type="button" aria-pressed="false" aria-label="只練合唱" title="只播放大合唱段落">
+        <button class="venue-toggle bar-chip chant-toggle" id="chant-btn" type="button" aria-pressed="false" aria-label="只練合唱" title="只播放大合唱段落" hidden>
           <span class="chant-ico">${STATIC_MIC_SVG}</span>
           <span class="venue-label">只練合唱</span>
         </button>
@@ -2202,7 +2202,7 @@ function buildSongShell(){
                 ${READING_MODES.map(mode => "<button type=\"button\" class=\"chant-version-option\" data-reading-mode=\"" + mode + "\" aria-pressed=\"" + (mode === readingMode ? "true" : "false") + "\" aria-label=\"" + readingModeLabel(mode) + "\">" + (mode === "both" ? "兩者" : readingModeLabel(mode)) + "</button>").join("")}
               </div>
             </div>
-            <div class="settings-row">
+            <div class="settings-row" hidden>
               <span class="settings-label" id="chant-version-label">應援版本</span>
               <div class="chant-version-segment settings-segment" role="group" aria-labelledby="chant-version-label">
                 <button type="button" class="chant-version-option" data-chant-version="jp" aria-pressed="false"><span class="settings-flag" aria-hidden="true">${chantVersionIcon("jp")}</span>${CHANT_VERSIONS.jp.label}</button>
@@ -2224,13 +2224,13 @@ function buildSongShell(){
             <div class="settings-row">
               <span class="settings-copy">
                 <span class="settings-label" id="prefer-live-label">優先播放卡拉 OK 版</span>
-                <span class="settings-hint">有卡拉 OK 伴奏的歌曲預設播放伴奏版</span>
+                <span class="settings-hint">開啟後進入歌曲預設播放卡拉 OK 伴奏（關閉則預設原唱 MV）</span>
               </span>
               <button class="settings-switch${preferLive ? " active" : ""}" id="prefer-live-btn" type="button" aria-pressed="${preferLive ? "true" : "false"}" aria-labelledby="prefer-live-label">
                 <span class="venue-switch"><span class="venue-knob"></span></span>
               </button>
             </div>
-            <div class="settings-row">
+            <div class="settings-row" hidden>
               <span class="settings-label" id="tip-pic-label">顯示應援動作示範</span>
               <button class="settings-switch${tipPicEnabled ? " active" : ""}" id="tip-pic-btn" type="button" aria-pressed="${tipPicEnabled ? "true" : "false"}" aria-labelledby="tip-pic-label">
                 <span class="venue-switch"><span class="venue-knob"></span></span>
@@ -2522,7 +2522,7 @@ function buildSongShell(){
   document.getElementById("prefer-live-btn").addEventListener("click", (e)=>{
     const before = liveActive(currentSong);
     preferLive = !preferLive;
-    store("horo-prefer-live", preferLive ? "1" : "0");
+    store("yoasobi-prefer-karaoke", preferLive ? "1" : "0");
     e.currentTarget.classList.toggle("active", preferLive);
     e.currentTarget.setAttribute("aria-pressed", preferLive ? "true" : "false");
     // 設定立刻套用到目前這首（取代這首歌上暫時選的來源）。

@@ -1,14 +1,44 @@
 import { EXT_LINK_SVG, SHARE_SVG, MOON_SVG, INFO_SVG } from "./icons.js";
 import { siteFooterHtml } from "./footer.js";
 
+const QUICK_PICKS = [
+  { id: "Idol", jp: "アイドル", sub: "我推的孩子 OP" },
+  { id: "YoruNiKakeru", jp: "夜に駆ける", sub: "出道代表作" },
+  { id: "Gunjou", jp: "群青", sub: "藍色時期" },
+  { id: "Kaibutsu", jp: "怪物", sub: "BEASTARS OP" },
+  { id: "Shukufuku", jp: "祝福", sub: "水星的魔女 OP" },
+  { id: "Yuusha", jp: "勇者", sub: "葬送的芙莉蓮 OP" },
+  { id: "Tabun", jp: "たぶん", sub: "抒情代表作" },
+  { id: "UNDEAD", jp: "UNDEAD", sub: "物語系列主題曲" },
+];
+
 // Shared by Vite prerendering and client-side navigation.
 export function homeHtml(build, themeToggle = `<button class="theme-toggle home-theme" type="button" data-theme-toggle aria-label="切換主題">${MOON_SVG}</button>`){
+  const quickCards = QUICK_PICKS.map(item => `
+    <a class="tf-song-pill" href="#/song/${item.id}">
+      <span class="tf-song-pill-title">${item.jp}</span>
+      <span class="tf-song-pill-sub">${item.sub}</span>
+    </a>
+  `).join("");
+
   return `
-    <section class="hero">
-      ${themeToggle}
-      <div class="hero-inner">
-        <div class="eyebrow">KARAOKE PRACTICE GUIDE</div>
-        <h1 class="tour-title"><span>YOASOBI</span> 卡拉 OK 練唱</h1>
+    <section class="hero tf-hero">
+      <header class="tf-topbar">
+        <div class="tf-brand">
+          <span class="tf-brand-dot"></span>
+          <span class="tf-brand-name">YOASOBI KARAOKE</span>
+        </div>
+        <div class="tf-topbar-actions">
+          <a class="tf-nav-link" href="#/guide">全部歌曲</a>
+          <a class="tf-nav-link" href="#/setlist">熱門 20 首</a>
+          ${themeToggle}
+        </div>
+      </header>
+
+      <div class="hero-inner tf-hero-inner">
+        <div class="tf-hero-badge">KARAOKE PRACTICE GUIDE・原唱 MV &amp; 卡拉 OK 雙軌</div>
+        <h1 class="tour-title tf-title"><span>YOASOBI</span> 卡拉 OK 練唱本</h1>
+        <p class="tf-subtitle">精選 20 首熱門歌曲・同步日文歌詞、羅馬拼音與繁體中文翻譯，一鍵切換原唱 MV 與卡拉 OK 伴奏</p>
 
         <div class="countdown" id="countdown" hidden>
           <div class="cd-pill">
@@ -17,52 +47,67 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
             <span class="cd-clock" id="cd-clock">00:00:00</span>
           </div>
         </div>
-
         <div class="today-card" id="today-card" hidden>
           <div class="today-head"><span class="dot"></span><span id="today-title">今日</span></div>
           <div class="today-now" id="today-now"></div>
           <ul class="today-list" id="today-list"></ul>
         </div>
 
-        <nav class="main-menu" aria-labelledby="main-menu-title">
-          <h2 class="main-menu-title" id="main-menu-title">練唱歌單</h2>
-          <div class="main-menu-actions">
-            <button class="menu-btn" type="button" id="songs-btn">
-              <span class="menu-btn-label">全部歌曲</span>
-              <span class="menu-btn-note">搜尋歌名・排序</span>
+        <nav class="main-menu tf-main-menu" aria-labelledby="main-menu-title">
+          <h2 class="main-menu-title" id="main-menu-title" hidden>練唱歌單</h2>
+          <div class="main-menu-actions tf-cta-row">
+            <button class="menu-btn tf-btn-primary" type="button" id="setlist-btn">
+              <span class="menu-btn-label">熱門 20 首練唱歌單</span>
+              <span class="menu-btn-note">從頭依序開唱</span>
             </button>
-            <button class="menu-btn" type="button" id="setlist-btn">
-              <span class="menu-btn-label">熱門 20 首</span>
-              <span class="menu-btn-note">依序練唱</span>
+            <button class="menu-btn tf-btn-secondary" type="button" id="songs-btn">
+              <span class="menu-btn-label">全部歌曲搜尋</span>
+              <span class="menu-btn-note">關鍵字篩選・排序</span>
             </button>
           </div>
         </nav>
 
-        <section class="info-section">
-          <div class="menu-card">
-            <div class="menu-links">
-              <a class="menu-chip" href="https://www.yoasobi-music.jp/" target="_blank" rel="noopener">
-                <span class="chip-ico">${EXT_LINK_SVG}</span>
-                <span class="chip-label">YOASOBI 官方網站</span>
-              </a>
-              <a class="menu-chip" href="https://www.youtube.com/@YOASOBI_Official" target="_blank" rel="noopener">
-                <span class="chip-ico">${EXT_LINK_SVG}</span>
-                <span class="chip-label">官方 YouTube</span>
-              </a>
+        <section class="info-section tf-sections">
+          <div class="tf-section-card">
+            <div class="tf-section-head">
+              <h3>熱門點播・一鍵開唱</h3>
+              <a class="tf-more-link" href="#/guide">查看全部 20 首 ›</a>
+            </div>
+            <div class="tf-song-grid">
+              ${quickCards}
             </div>
           </div>
 
-          <aside class="home-note">
-            <span class="home-note-ico">${INFO_SVG}</span>
-            <div class="home-note-body">
-              <b>卡拉 OK 練唱使用說明</b>
-              <p>點進任一首歌後，右側會同步顯示<b>日文歌詞（附假名注音、羅馬字）與繁體中文翻譯</b>；點選影片下方的「原唱 MV / 卡拉 OK」可隨時切換純伴奏練唱。</p>
-              <p class="sub">下方工具列支援倍速調整、單曲循環、字級縮放與卡拉 OK 逐字高亮開關。</p>
+          <div class="tf-section-card tf-guide-card">
+            <div class="tf-section-head">
+              <h3>練唱功能指南</h3>
             </div>
-          </aside>
+            <div class="tf-feature-grid">
+              <div class="tf-feature-item">
+                <b>原唱 MV / 卡拉 OK 切換</b>
+                <span>預設開啟原唱 MV，點影片下方即可切到卡拉 OK 伴奏練唱。</span>
+              </div>
+              <div class="tf-feature-item">
+                <b>日文・羅馬拼音・繁中同步</b>
+                <span>自動載入完整歌詞並附上羅馬拼音與繁體中文，點歌詞即可跳轉。</span>
+              </div>
+              <div class="tf-feature-item">
+                <b>毫秒級對時微調</b>
+                <span>遇到不同前奏長度的伴奏影片，用 -2s / -0.5s / +0.5s / +2s 立即對準。</span>
+              </div>
+            </div>
+          </div>
 
-          <div class="home-foot">
-            <button class="share-btn" type="button" id="share-btn">${SHARE_SVG} 分享</button>
+          <div class="tf-links-bar">
+            <a class="menu-chip tf-chip" href="https://www.yoasobi-music.jp/" target="_blank" rel="noopener">
+              <span class="chip-ico">${EXT_LINK_SVG}</span>
+              <span class="chip-label">YOASOBI 官方網站</span>
+            </a>
+            <a class="menu-chip tf-chip" href="https://www.youtube.com/@YOASOBI_Official" target="_blank" rel="noopener">
+              <span class="chip-ico">${EXT_LINK_SVG}</span>
+              <span class="chip-label">官方 YouTube</span>
+            </a>
+            <button class="share-btn tf-chip" type="button" id="share-btn">${SHARE_SVG} 分享網站</button>
           </div>
         </section>
       </div>

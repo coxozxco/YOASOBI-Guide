@@ -1,10 +1,10 @@
 /*
- * Live full-lyrics loader (LRCLIB) + automatic Traditional Chinese translation
+ * Live full-lyrics loader (LRCLIB) + automatic Traditional Chinese & Romaji (Kanji-aware)
  * + per-song time offset + custom Chinese/LRC storage.
  */
 
 const LRC_CACHE_PREFIX = "yoasobi-lrc-full-v2:";
-const AUTO_TR_CACHE_PREFIX = "yoasobi-auto-tr-v1:";
+const AUTO_META_CACHE_PREFIX = "yoasobi-auto-tr-rm-v2:";
 const CUSTOM_LRC_PREFIX = "yoasobi-custom-lrc-v1:";
 const CUSTOM_TR_PREFIX = "yoasobi-custom-tr-v1:";
 const OFFSET_PREFIX = "yoasobi-offset-v1:";
@@ -57,10 +57,10 @@ export function saveCustomLrc(songId, text) {
 
 export function clearCachedLrclib(songId) {
   safeRemove(`${LRC_CACHE_PREFIX}${songId}`);
-  safeRemove(`${AUTO_TR_CACHE_PREFIX}${songId}`);
+  safeRemove(`${AUTO_META_CACHE_PREFIX}${songId}`);
 }
 
-export function parseLrcToSongLines(lrcText, starterLines = [], customTrText = "", autoTrList = []) {
+export function parseLrcToSongLines(lrcText, starterLines = [], customTrText = "", autoTrList = [], autoRmList = []) {
   const rawLines = String(lrcText || "").split(/\r?\n/);
   const timeRe = /\[(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?\]/g;
   const starterByJp = new Map();
@@ -110,10 +110,15 @@ export function parseLrcToSongLines(lrcText, starterLines = [], customTrText = "
       (starter && starter.tr) ||
       (Array.isArray(autoTrList) ? autoTrList[index] : "") ||
       "";
+    const romaji =
+      (starter && starter.romaji) ||
+      (Array.isArray(autoRmList) ? autoRmList[index] : "") ||
+      "";
+
     const line = { index, time: t, jp: item.jp };
     if (tr) line.tr = tr;
     if (starter && starter.reading) line.reading = starter.reading;
-    if (starter && starter.romaji) line.romaji = starter.romaji;
+    if (romaji) line.romaji = romaji;
     return line;
   });
 }
@@ -158,7 +163,6 @@ async function fetchSyncedLrcFromLrclib(trackName, expectedDuration) {
   const qArtist = encodeURIComponent("YOASOBI");
   const qTrack = encodeURIComponent(trackName);
 
-  // Prefer search first when we know video duration so we can pick the closest duration match
   try {
     const searchRes = await fetch(`https://lrclib.net/api/search?artist_name=${qArtist}&track_name=${qTrack}`);
     if (searchRes.ok) {
@@ -190,44 +194,67 @@ async function fetchSyncedLrcFromLrclib(trackName, expectedDuration) {
   return null;
 }
 
-async function translateChunkToZhTw(lines) {
-  if (!lines.length) return [];
+async function translateAndRomanizeChunk(lines) {
+  if (!lines.length) return { tr: [], rm: [] };
   const joined = lines.join("\n");
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=zh-TW&dt=t&q=${encodeURIComponent(joined)}`;
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=zh-TW&dt=t&dt=rm&q=${encodeURIComponent(joined)}`;
   const res = await fetch(url);
-  if (!res.ok) return [];
+  if (!res.ok) return { tr: [], rm: [] };
   const data = await res.json();
-  if (!Array.isArray(data) || !Array.isArray(data[0])) return [];
-  const combined = data[0].map(seg => (Array.isArray(seg) ? seg[0] : "")).join("");
-  return combined.split(/\r?\n/).map(s => s.trim());
+  if (!Array.isArray(data) || !Array.isArray(data[0])) return { tr: [], rm: [] };
+
+  const trJoined = data[0]
+    .filter(seg => Array.isArray(seg) && typeof seg[0] === "string")
+    .map(seg => seg[0])
+    .join("");
+
+  const rmJoined = data[0]
+    .filter(seg => Array.isArray(seg) && typeof seg[3] === "string" && seg[3].trim())
+    .map(seg => seg[3])
+    .join("\n");
+
+  const tr = trJoined.split(/\r?\n/).map(s => s.trim());
+  const rm = rmJoined.split(/\r?\n/).map(s => s.trim());
+  return { tr, rm };
 }
 
-async function getOrFetchAutoTranslations(songId, jpLines) {
-  if (!jpLines.length) return [];
-  const cachedRaw = safeGet(`${AUTO_TR_CACHE_PREFIX}${songId}`);
+async function getOrFetchAutoMeta(songId, jpLines) {
+  if (!jpLines.length) return { tr: [], rm: [] };
+  const cachedRaw = safeGet(`${AUTO_META_CACHE_PREFIX}${songId}`);
   if (cachedRaw) {
     try {
       const cached = JSON.parse(cachedRaw);
-      if (Array.isArray(cached) && cached.length === jpLines.length) return cached;
+      if (
+        cached &&
+        Array.isArray(cached.tr) &&
+        Array.isArray(cached.rm) &&
+        cached.tr.length === jpLines.length &&
+        cached.rm.length === jpLines.length
+      ) {
+        return cached;
+      }
     } catch (e) {}
   }
 
-  const result = [];
-  const CHUNK_SIZE = 20;
+  const trAll = [];
+  const rmAll = [];
+  const CHUNK_SIZE = 15;
   try {
     for (let i = 0; i < jpLines.length; i += CHUNK_SIZE) {
       const chunk = jpLines.slice(i, i + CHUNK_SIZE);
-      const translated = await translateChunkToZhTw(chunk);
+      const { tr, rm } = await translateAndRomanizeChunk(chunk);
       for (let j = 0; j < chunk.length; j++) {
-        result.push(translated[j] || "");
+        trAll.push(tr[j] || "");
+        rmAll.push(rm[j] || "");
       }
     }
-    if (result.some(Boolean)) {
-      safeSet(`${AUTO_TR_CACHE_PREFIX}${songId}`, JSON.stringify(result));
-      return result;
+    if (trAll.some(Boolean) || rmAll.some(Boolean)) {
+      const payload = { tr: trAll, rm: rmAll };
+      safeSet(`${AUTO_META_CACHE_PREFIX}${songId}`, JSON.stringify(payload));
+      return payload;
     }
   } catch (e) {}
-  return [];
+  return { tr: [], rm: [] };
 }
 
 export async function hydrateFullLyricsForSong(song, expectedDuration = null) {
@@ -241,7 +268,9 @@ export async function hydrateFullLyricsForSong(song, expectedDuration = null) {
 
   // 1. User custom LRC
   if (customLrc) {
-    const parsed = parseLrcToSongLines(customLrc, song._starterLyrics, customTr);
+    const preCustom = parseLrcToSongLines(customLrc, song._starterLyrics, customTr);
+    const autoMeta = await getOrFetchAutoMeta(`${song.id}:custom`, preCustom.map(l => l.jp));
+    const parsed = parseLrcToSongLines(customLrc, song._starterLyrics, customTr, autoMeta.tr, autoMeta.rm);
     if (parsed.length > 0) {
       song.lyrics = parsed;
       song._dynamicFullLyrics = true;
@@ -262,19 +291,20 @@ export async function hydrateFullLyricsForSong(song, expectedDuration = null) {
 
   if (lrcText) {
     const preParsed = parseLrcToSongLines(lrcText, song._starterLyrics, customTr);
-    let autoTr = [];
-    if (!customTr && preParsed.length > 0) {
-      autoTr = await getOrFetchAutoTranslations(song.id, preParsed.map(l => l.jp));
-    }
-    const parsed = parseLrcToSongLines(lrcText, song._starterLyrics, customTr, autoTr);
+    const autoMeta = preParsed.length > 0
+      ? await getOrFetchAutoMeta(song.id, preParsed.map(l => l.jp))
+      : { tr: [], rm: [] };
+    const parsed = parseLrcToSongLines(lrcText, song._starterLyrics, customTr, autoMeta.tr, autoMeta.rm);
     if (parsed.length > 0) {
       song.lyrics = parsed;
       song._dynamicFullLyrics = true;
-      const hasZh = parsed.some(l => l.tr);
-      const label = fromCache ? "LRCLIB 快取" : "LRCLIB";
+      const tags = [];
+      if (parsed.some(l => l.romaji)) tags.push("羅馬拼音");
+      if (parsed.some(l => l.tr)) tags.push("繁中翻譯");
+      const base = fromCache ? "LRCLIB 快取" : "LRCLIB";
       return {
         updated: true,
-        source: hasZh ? `${label}＋繁中翻譯` : label,
+        source: tags.length ? `${base}・${tags.join("＋")}` : base,
         count: parsed.length,
       };
     }
