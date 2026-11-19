@@ -95,7 +95,7 @@ let karaokeEnabled = store("horo-karaoke") === "1";
 let autoplayEnabled = store("horo-autoplay") !== "0";
 // 單曲循環，預設關閉；開啟時影片播完從頭重播同一首，不跳下一首。
 let repeatOneEnabled = store("horo-repeat-one") === "1";
-// 優先播放 Live 版，預設開啟；有官方現場版的歌預設看現場版（歌詞改用現場時間）。
+// 優先播放卡拉 OK 版，預設開啟；有官方現場版的歌預設看現場版（歌詞改用現場時間）。
 let preferLive = store("horo-prefer-live") !== "0";
 // 應援動作示範動畫，預設開啟；關閉時歌詞同步不再顯示動作示範。
 let tipPicEnabled = store("horo-tip-pic") !== "0";
@@ -2053,8 +2053,8 @@ function buildSongShell(){
                   <span class="lyrics-note-copy">點選歌詞跳至影片位置，歌詞隨影片同步</span>
                 </div>
                 <div class="chant-version-segment video-source-segment" id="video-source-segment" role="group" aria-label="影片來源" hidden>
-                  <button type="button" class="chant-version-option" data-video-source="mv" aria-pressed="true">MV</button>
-                  <button type="button" class="chant-version-option" data-video-source="live" aria-pressed="false">Live</button>
+                  <button type="button" class="chant-version-option" data-video-source="mv" aria-pressed="true">原唱 MV</button>
+                  <button type="button" class="chant-version-option" data-video-source="live" aria-pressed="false">卡拉 OK</button>
                 </div>
                 <div class="lyrics-legend">
                   <span class="legend-item"><span class="legend-icon chant">${INLINE_ICONS.mic}</span>大合唱</span>
@@ -2184,8 +2184,8 @@ function buildSongShell(){
             </div>
             <div class="settings-row">
               <span class="settings-copy">
-                <span class="settings-label" id="prefer-live-label">優先播放 Live 版</span>
-                <span class="settings-hint">有官方 Live 版的歌曲預設播放 Live 版</span>
+                <span class="settings-label" id="prefer-live-label">優先播放卡拉 OK 版</span>
+                <span class="settings-hint">有卡拉 OK 伴奏的歌曲預設播放伴奏版</span>
               </span>
               <button class="settings-switch${preferLive ? " active" : ""}" id="prefer-live-btn" type="button" aria-pressed="${preferLive ? "true" : "false"}" aria-labelledby="prefer-live-label">
                 <span class="venue-switch"><span class="venue-knob"></span></span>

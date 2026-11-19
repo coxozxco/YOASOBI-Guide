@@ -12,11 +12,7 @@ export const LIVE_TIMING = {
         63.2,
         176.0
       ],
-      "singAlong": [
-        1,
-        2,
-        3
-      ]
+      "singAlong": []
     }
   ],
   "YoruNiKakeru": [
@@ -31,11 +27,7 @@ export const LIVE_TIMING = {
         72.0,
         215.0
       ],
-      "singAlong": [
-        0,
-        2,
-        3
-      ]
+      "singAlong": []
     }
   ],
   "Gunjou": [
@@ -49,10 +41,7 @@ export const LIVE_TIMING = {
         68.0,
         190.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Kaibutsu": [
@@ -66,10 +55,7 @@ export const LIVE_TIMING = {
         48.5,
         152.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Shukufuku": [
@@ -83,10 +69,7 @@ export const LIVE_TIMING = {
         55.0,
         158.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Yuusha": [
@@ -100,10 +83,7 @@ export const LIVE_TIMING = {
         54.0,
         155.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Tabun": [
@@ -117,10 +97,7 @@ export const LIVE_TIMING = {
         58.0,
         182.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Halzion": [
@@ -134,10 +111,7 @@ export const LIVE_TIMING = {
         52.0,
         148.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "AnoYumeWoNazotte": [
@@ -151,10 +125,7 @@ export const LIVE_TIMING = {
         60.0,
         178.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Encore": [
@@ -168,10 +139,7 @@ export const LIVE_TIMING = {
         66.0,
         205.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "YasashiiSuisei": [
@@ -185,10 +153,7 @@ export const LIVE_TIMING = {
         58.0,
         158.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Sangenshoku": [
@@ -202,10 +167,7 @@ export const LIVE_TIMING = {
         58.0,
         175.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Haruka": [
@@ -219,10 +181,7 @@ export const LIVE_TIMING = {
         62.0,
         195.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "MouSukoshiDake": [
@@ -236,10 +195,7 @@ export const LIVE_TIMING = {
         54.0,
         168.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "LoveLetter": [
@@ -253,10 +209,7 @@ export const LIVE_TIMING = {
         58.0,
         166.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "TaishoRoman": [
@@ -270,10 +223,7 @@ export const LIVE_TIMING = {
         52.0,
         132.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Seventeen": [
@@ -287,10 +237,7 @@ export const LIVE_TIMING = {
         52.0,
         162.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "Adventure": [
@@ -304,10 +251,7 @@ export const LIVE_TIMING = {
         54.0,
         162.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "UNDEAD": [
@@ -321,10 +265,7 @@ export const LIVE_TIMING = {
         52.0,
         150.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ],
   "ButaiNiTatte": [
@@ -338,10 +279,7 @@ export const LIVE_TIMING = {
         58.0,
         166.0
       ],
-      "singAlong": [
-        1,
-        2
-      ]
+      "singAlong": []
     }
   ]
 };
