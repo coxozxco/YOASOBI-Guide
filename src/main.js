@@ -1239,20 +1239,8 @@ function renderGuide(){
       <section class="songs-section">
         <div class="songs-head">
           <h1>全部歌曲</h1>
-          <p>選擇歌曲，搭配影片查看歌詞與大合唱重點</p>
-          <div class="song-legend">
-            <span class="legend-item"><span class="legend-icon chant">${INLINE_ICONS.mic}</span>大合唱 <b class="legend-num">12</b> 行</span>
-            <span class="legend-item"><span class="legend-icon clap">${INLINE_ICONS.clap}</span>拍手</span>
-            <span class="legend-item"><span class="legend-icon wave">${INLINE_ICONS.wave}</span>揮手</span>
-            <span class="legend-item"><span class="legend-icon jump">${INLINE_ICONS.jump}</span>跳躍</span>
-            <span class="legend-item"><span class="legend-icon spin">${INLINE_ICONS.spin}</span>舉起食指逆時針旋轉</span>
-          </div>
-          <p class="song-legend-note">數字代表目前應援版本的大合唱歌詞行數</p>
+          <p>點選歌曲即可同步練唱日文、羅馬拼音與繁體中文歌詞</p>
         </div>
-        <details class="chant-source-details" id="guide-chant-source">
-          <summary>應援版本說明</summary>
-          <div id="guide-chant-source-content"></div>
-        </details>
         <div class="song-search-sentinel" id="song-search-sentinel"></div>
         <div class="song-search">
           <label class="search-label" for="song-search-input">搜尋歌曲</label>
@@ -1266,7 +1254,7 @@ function renderGuide(){
         <div class="song-sorts" role="group" aria-label="歌曲清單排序">
           <button class="song-sort" type="button" data-sort="default">預設</button>
           <button class="song-sort" type="button" data-sort="title" id="sort-title">名稱</button>
-          <button class="song-sort" type="button" data-sort="chant" id="sort-chant">大合唱</button>
+          <button class="song-sort" type="button" data-sort="chant" id="sort-chant" hidden>大合唱</button>
         </div>
         <div class="song-search-meta"><span id="song-count">共 ${listSongs().length} 首</span></div>
         <p class="song-empty" id="song-empty" hidden><b>找不到歌曲</b>請輸入部分歌曲名稱或歌曲編號</p>
@@ -1421,11 +1409,11 @@ function paintSetlist(){
 
   const desc = document.getElementById("setlist-desc");
   if (desc) desc.innerHTML =
-    `${escapeHtml(SETLIST_TOKYO.dates)}<br>點選歌曲即可前往應援指南。找不到的歌曲請到<a href="#/guide">全部歌曲</a>。`;
+    `${escapeHtml(SETLIST_TOKYO.dates)}<br>點選歌曲即可開啟同步歌詞練唱，或到<a href="#/guide">全部歌曲</a>搜尋曲目。`;
 
   const note = document.getElementById("setlist-note");
   if (note) note.innerHTML =
-    `※ 整理自粉絲紀錄的非官方歌單；台北 10/31、11/01 與東京、首爾場順序相同，六・日不同的曲目已分開標示。`;
+    `※ 精選 YOASOBI 熱門 20 首代表作，每首皆支援原唱 MV 與卡拉 OK 伴奏一鍵切換。`;
 
   // 눌린 줄이 셋리스트의 몇 번째인지 같이 기억해 둔다 (이전/다음 곡용)
   let pos = 0;
@@ -1456,13 +1444,13 @@ function renderSetlist(){
 
       <section class="setlist-body" id="setlist-body">
         <div class="setlist-head">
-          <h1>亞巡歌單</h1>
+          <h1>熱門 20 首練唱歌單</h1>
           <p id="setlist-desc"></p>
         </div>
 
         <div class="setlist-meta">
           <span id="setlist-count"></span>
-          <span id="setlist-mode-meta">演出順序</span>
+          <span id="setlist-mode-meta">依序練唱</span>
         </div>
 
         <ul class="set-list" id="set-list"></ul>
@@ -1580,7 +1568,7 @@ function setupHomeExtras(){
     shareBtn.addEventListener("click", async ()=>{
       const data = {
         title: "YOASOBI 卡拉 OK 練唱本",
-        text: "搭配影片查看各曲歌詞與大合唱、拍手、揮手重點",
+        text: "YOASOBI 熱門 20 首卡拉 OK 練唱本：同步日文、羅馬拼音與繁體中文歌詞",
         url: location.href.split("#")[0]
       };
       try {
@@ -2050,7 +2038,7 @@ function buildSongShell(){
             <div class="video-frame">
               <div id="yt-player"></div>
               <details class="karaoke-source-popover" id="karaoke-source-popover">
-                <summary aria-label="查看同步資訊與中譯歌詞作者" title="同步資訊與中譯歌詞作者">${INFO_SVG}</summary>
+                <summary aria-label="查看歌詞來源與同步資訊" title="歌詞來源與同步資訊">${INFO_SVG}</summary>
                 <span class="karaoke-source-status" id="karaoke-source-status" role="status" aria-live="polite">
                   <span id="karaoke-source-status-text"></span>
                   <span class="lyrics-credit" id="lyrics-credit" hidden></span>
@@ -4543,7 +4531,7 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 /* 2) 오프라인이 되면 알려 주기 — 가사는 되지만 영상은 안 된다는 안내 */
 function updateOnlineState(){
   if (!navigator.onLine){
-    showBanner("目前處於<b>離線</b>狀態。仍可查看歌詞與應援提示，但無法播放影片。",
+    showBanner("目前處於<b>離線</b>狀態。仍可查看已快取的同步歌詞，但無法播放影片。",
                "", null, "offline");
   } else if (banner && banner.classList.contains("offline")){
     hideBanner();
@@ -4567,7 +4555,7 @@ window.addEventListener("beforeinstallprompt", (e)=>{
   e.preventDefault();
   if (!canShowInstallHint() || installHintDismissed()) return;
   deferredInstall = e;
-  showInstallHint("<b>安裝</b>到主畫面後，就能在場館直接開啟。",
+  showInstallHint("<b>安裝</b>到主畫面後，隨時都能像 App 一樣快速練唱。",
                   "安裝",
                   async ()=>{
                     const promptEvent = deferredInstall;

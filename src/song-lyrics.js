@@ -2,7 +2,7 @@ export const SONG_LYRICS = [
   {
     "id": "Idol",
     "title": "アイドル (Idol・偶像)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "ZRtdQ81jPUQ",
     "lyrics": [
       {
@@ -25,12 +25,13 @@ export const SONG_LYRICS = [
         "jp": "これは絶対嘘じゃない 愛してる",
         "tr": "這絕對不是謊言，我愛你"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "YoruNiKakeru",
     "title": "夜に駆ける (向夜晚奔去)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "mJ1N7-HyH1A",
     "lyrics": [
       {
@@ -53,12 +54,13 @@ export const SONG_LYRICS = [
         "jp": "二人今、夜に駆け出してく",
         "tr": "兩人此刻正朝著夜晚奔馳而去"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Gunjou",
     "title": "群青 (Gunjou)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "Y4nEEZwckuU",
     "lyrics": [
       {
@@ -76,12 +78,13 @@ export const SONG_LYRICS = [
         "jp": "好きなことを続けること それは楽しいだけじゃない",
         "tr": "持續做自己喜歡的事，並不只有快樂而已"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Kaibutsu",
     "title": "怪物 (Monster)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "qivRUhepWVA",
     "lyrics": [
       {
@@ -99,12 +102,13 @@ export const SONG_LYRICS = [
         "jp": "ただ君を守るそのために",
         "tr": "只為了守護你"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Shukufuku",
     "title": "祝福 (The Blessing)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "by4SYYWlhEs",
     "lyrics": [
       {
@@ -122,12 +126,13 @@ export const SONG_LYRICS = [
         "jp": "目いっぱいの祝福を君に",
         "tr": "獻上滿滿的祝福給你"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Yuusha",
     "title": "勇者 (The Brave)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "oJ0yksEuepg",
     "lyrics": [
       {
@@ -145,12 +150,13 @@ export const SONG_LYRICS = [
         "jp": "物語は続く",
         "tr": "故事仍在繼續"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Tabun",
     "title": "たぶん (Probably・大概)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "8iuLXODzL04",
     "lyrics": [
       {
@@ -168,12 +174,13 @@ export const SONG_LYRICS = [
         "jp": "新しい朝を迎える",
         "tr": "迎來全新的早晨"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Halzion",
     "title": "ハルジオン (春紫苑)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "BQ80slZEGLU",
     "lyrics": [
       {
@@ -191,12 +198,13 @@ export const SONG_LYRICS = [
         "jp": "新しい未来へ歩き出す",
         "tr": "朝著嶄新的未來邁出腳步"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "AnoYumeWoNazotte",
     "title": "あの夢をなぞって (描繪著那場夢)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "sAuEeM_6zpk",
     "lyrics": [
       {
@@ -214,12 +222,13 @@ export const SONG_LYRICS = [
         "jp": "好きだよと伝える夜に",
         "tr": "在傳達喜歡你的這個夜晚"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Encore",
     "title": "アンコール (Encore・安可)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "vcGbefQBvJ4",
     "lyrics": [
       {
@@ -237,12 +246,13 @@ export const SONG_LYRICS = [
         "jp": "さよならの歌を奏でよう",
         "tr": "一起奏響告別之歌吧"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "YasashiiSuisei",
     "title": "優しい彗星 (溫柔的彗星)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "iykAM_McguQ",
     "lyrics": [
       {
@@ -260,12 +270,13 @@ export const SONG_LYRICS = [
         "jp": "いつまでも忘れないように",
         "tr": "為了永遠不會忘記"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Sangenshoku",
     "title": "三原色 (RGB)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "ip4ZNVHj_BU",
     "lyrics": [
       {
@@ -283,12 +294,13 @@ export const SONG_LYRICS = [
         "jp": "また会えるから 物語は白い朝に始まる",
         "tr": "因為還能再相遇，故事在潔白的早晨展開"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Haruka",
     "title": "ハルカ (遙遠)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "vd3IlOjSUGQ",
     "lyrics": [
       {
@@ -306,12 +318,13 @@ export const SONG_LYRICS = [
         "jp": "込み上げてくる想いはただありがとう",
         "tr": "湧上心頭的思念唯有滿滿的謝謝"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "MouSukoshiDake",
     "title": "もう少しだけ (再一點就好)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "gUPbZaxe1sA",
     "lyrics": [
       {
@@ -329,12 +342,13 @@ export const SONG_LYRICS = [
         "jp": "小さな幸せを見つけられますように",
         "tr": "願你能找到那份小小的幸福"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "LoveLetter",
     "title": "ラブレター (情書)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "Wxy0fBsfh_0",
     "lyrics": [
       {
@@ -352,12 +366,13 @@ export const SONG_LYRICS = [
         "jp": "これからもずっとよろしくね",
         "tr": "今後也請多多指教喔"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "TaishoRoman",
     "title": "大正浪漫 (大正浪漫)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "WdtgK27IopU",
     "lyrics": [
       {
@@ -375,12 +390,13 @@ export const SONG_LYRICS = [
         "jp": "君に届くように願いを込めて",
         "tr": "寄託心願只為傳達給你"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Seventeen",
     "title": "セブンティーン (十七歲)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "q-D2VzYC3lw",
     "lyrics": [
       {
@@ -398,12 +414,13 @@ export const SONG_LYRICS = [
         "jp": "私らしく生きるよ",
         "tr": "我要活出屬於自己的模樣"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "Adventure",
     "title": "アドベンチャー (冒險)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "BoB-0pv9-1o",
     "lyrics": [
       {
@@ -421,12 +438,13 @@ export const SONG_LYRICS = [
         "jp": "限界のない冒険の舞台へ",
         "tr": "前往沒有極限的冒險舞台"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "UNDEAD",
     "title": "UNDEAD",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "BryspbM6s3E",
     "lyrics": [
       {
@@ -444,12 +462,13 @@ export const SONG_LYRICS = [
         "jp": "今を生きているんだろ",
         "tr": "你現在正活在當下吧"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   },
   {
     "id": "ButaiNiTatte",
     "title": "舞台に立って (站上舞台)",
-    "translationCredit": "YOASOBI 卡拉 OK 練唱本",
+    "translationCredit": "",
     "youtubeId": "GWDzKel_vuQ",
     "lyrics": [
       {
@@ -467,6 +486,7 @@ export const SONG_LYRICS = [
         "jp": "今までのどの瞬間も無駄じゃなかった",
         "tr": "至今為止的每一瞬間都沒有白費"
       }
-    ]
+    ],
+    "translationCreditUrl": null
   }
 ];
