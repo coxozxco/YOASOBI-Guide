@@ -2075,9 +2075,11 @@ function buildSongShell(){
                 <div class="lyrics-legend yoasobi-tools">
                   <div class="offset-control" role="group" aria-label="歌詞時間微調">
                     <span class="offset-label">對時</span>
+                    <button type="button" class="offset-btn" data-offset-delta="-2" title="歌詞提早 2 秒">-2s</button>
                     <button type="button" class="offset-btn" data-offset-delta="-0.5" title="歌詞提早 0.5 秒">-0.5s</button>
                     <button type="button" class="offset-val" id="lyric-offset-val" data-offset-delta="reset" title="點擊歸零">0.0s</button>
                     <button type="button" class="offset-btn" data-offset-delta="0.5" title="歌詞延後 0.5 秒">+0.5s</button>
+                    <button type="button" class="offset-btn" data-offset-delta="2" title="歌詞延後 2 秒">+2s</button>
                   </div>
                   <button type="button" class="offset-btn lrc-edit-trigger" id="lrc-edit-open-btn" title="貼上中文翻譯或完整 LRC 歌詞">中譯 / LRC</button>
                   <button type="button" class="chant-notes-toggle" id="chant-notes-toggle" aria-expanded="false" aria-controls="chant-notes" hidden></button>
@@ -3037,6 +3039,7 @@ function renderSong(song){
   loadYouTubeApi();
   ensurePlayer();
   ensurePlaying(videoIdOf(song));
+  startSyncTimer();
   loadKaraokeTiming(song);
   scheduleJapaneseFontLoad(songJapaneseFontText(song), [400, 500, 700]);
 }
@@ -3844,7 +3847,7 @@ async function loadKaraokeTiming(song){
   updateLyricOffsetUi();
   setKaraokeSourceStatus("loading", "正在從 LRCLIB 載入完整同步歌詞…");
 
-  const hydrated = await hydrateFullLyricsForSong(song);
+  const hydrated = await hydrateFullLyricsForSong(song, getPlayerDuration());
   if (seq !== karaokeLoadSeq || !song || currentSong !== song) return;
 
   if (liveActive(song)){
@@ -4294,13 +4297,12 @@ function onPlayerStateChange(event) {
     return;
   }
 
-  // 재생 중(PLAYING = 1)일 때만 동기화 타이머 가동
-  if (event.data === YT.PlayerState.PLAYING) {
+  // 歌曲頁開啟期間持續同步，避免 YouTube 緩衝或切換來源時漏接事件導致歌詞停住
+  if (isSongViewActive()) {
     startSyncTimer();
+    updateLyricsSync();
   } else {
     stopSyncTimer();
-    // 일시정지/탐색 시에도 위치에 맞춰 현재 가사 하이라이트 1회 갱신
-    updateLyricsSync();
   }
 }
 
@@ -4411,6 +4413,8 @@ function seekTo(seconds) {
   if (player && typeof player.seekTo === 'function') {
     player.seekTo(seconds, true);
     player.playVideo();
+    startSyncTimer();
+    setTimeout(() => updateLyricsSync(true), 120);
   }
 }
 

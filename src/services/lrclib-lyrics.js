@@ -1,11 +1,10 @@
 /*
- * Live full-lyrics loader (LRCLIB) + per-song time offset + custom Chinese/LRC storage.
- * Runs in the visitor's browser so all 20 YOASOBI songs load complete synced lines
- * (40-80 lines per song), cache them in localStorage for offline use, and stay synced
- * across both Original MV and Karaoke backing tracks.
+ * Live full-lyrics loader (LRCLIB) + automatic Traditional Chinese translation
+ * + per-song time offset + custom Chinese/LRC storage.
  */
 
-const LRC_CACHE_PREFIX = "yoasobi-lrc-full-v1:";
+const LRC_CACHE_PREFIX = "yoasobi-lrc-full-v2:";
+const AUTO_TR_CACHE_PREFIX = "yoasobi-auto-tr-v1:";
 const CUSTOM_LRC_PREFIX = "yoasobi-custom-lrc-v1:";
 const CUSTOM_TR_PREFIX = "yoasobi-custom-tr-v1:";
 const OFFSET_PREFIX = "yoasobi-offset-v1:";
@@ -58,9 +57,10 @@ export function saveCustomLrc(songId, text) {
 
 export function clearCachedLrclib(songId) {
   safeRemove(`${LRC_CACHE_PREFIX}${songId}`);
+  safeRemove(`${AUTO_TR_CACHE_PREFIX}${songId}`);
 }
 
-export function parseLrcToSongLines(lrcText, starterLines = [], customTrText = "") {
+export function parseLrcToSongLines(lrcText, starterLines = [], customTrText = "", autoTrList = []) {
   const rawLines = String(lrcText || "").split(/\r?\n/);
   const timeRe = /\[(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?\]/g;
   const starterByJp = new Map();
@@ -97,7 +97,6 @@ export function parseLrcToSongLines(lrcText, starterLines = [], customTrText = "
 
   items.sort((a, b) => a.time - b.time);
 
-  // Ensure strictly increasing timestamps so timing ranges never collapse to 0
   let prevTime = -1;
   return items.map((item, index) => {
     let t = item.time;
@@ -105,7 +104,12 @@ export function parseLrcToSongLines(lrcText, starterLines = [], customTrText = "
     prevTime = t;
 
     const starter = starterByJp.get(normalizeJp(item.jp));
-    const tr = item.inlineTr || customTrList[index] || (starter && starter.tr) || "";
+    const tr =
+      item.inlineTr ||
+      customTrList[index] ||
+      (starter && starter.tr) ||
+      (Array.isArray(autoTrList) ? autoTrList[index] : "") ||
+      "";
     const line = { index, time: t, jp: item.jp };
     if (tr) line.tr = tr;
     if (starter && starter.reading) line.reading = starter.reading;
@@ -135,9 +139,34 @@ export function buildLineKaraokeTiming(song, sourceLabel = "LRCLIB 同步歌詞"
   };
 }
 
-async function fetchSyncedLrcFromLrclib(trackName) {
+function pickBestLrclibItem(list, expectedDuration) {
+  const candidates = (list || []).filter(item => item && typeof item.syncedLyrics === "string" && item.syncedLyrics.trim());
+  if (!candidates.length) return null;
+  if (!Number.isFinite(expectedDuration) || expectedDuration <= 0) {
+    return candidates[0];
+  }
+  return candidates
+    .slice()
+    .sort((a, b) => {
+      const da = Number.isFinite(Number(a.duration)) ? Math.abs(Number(a.duration) - expectedDuration) : 999;
+      const db = Number.isFinite(Number(b.duration)) ? Math.abs(Number(b.duration) - expectedDuration) : 999;
+      return da - db;
+    })[0];
+}
+
+async function fetchSyncedLrcFromLrclib(trackName, expectedDuration) {
   const qArtist = encodeURIComponent("YOASOBI");
   const qTrack = encodeURIComponent(trackName);
+
+  // Prefer search first when we know video duration so we can pick the closest duration match
+  try {
+    const searchRes = await fetch(`https://lrclib.net/api/search?artist_name=${qArtist}&track_name=${qTrack}`);
+    if (searchRes.ok) {
+      const list = await searchRes.json();
+      const best = pickBestLrclibItem(list, expectedDuration);
+      if (best) return best.syncedLyrics;
+    }
+  } catch (e) {}
 
   try {
     const res = await fetch(`https://lrclib.net/api/get?artist_name=${qArtist}&track_name=${qTrack}`);
@@ -150,21 +179,59 @@ async function fetchSyncedLrcFromLrclib(trackName) {
   } catch (e) {}
 
   try {
-    const searchRes = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent("YOASOBI " + trackName)}`);
-    if (searchRes.ok) {
-      const list = await searchRes.json();
-      if (Array.isArray(list)) {
-        const hit = list.find(item => item && typeof item.syncedLyrics === "string" && item.syncedLyrics.trim());
-        if (hit) return hit.syncedLyrics;
-      }
+    const fallbackRes = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent("YOASOBI " + trackName)}`);
+    if (fallbackRes.ok) {
+      const list = await fallbackRes.json();
+      const best = pickBestLrclibItem(list, expectedDuration);
+      if (best) return best.syncedLyrics;
     }
   } catch (e) {}
 
   return null;
 }
 
-export async function hydrateFullLyricsForSong(song) {
-  if (!song) return { updated: false, source: "starter" };
+async function translateChunkToZhTw(lines) {
+  if (!lines.length) return [];
+  const joined = lines.join("\n");
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=zh-TW&dt=t&q=${encodeURIComponent(joined)}`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = await res.json();
+  if (!Array.isArray(data) || !Array.isArray(data[0])) return [];
+  const combined = data[0].map(seg => (Array.isArray(seg) ? seg[0] : "")).join("");
+  return combined.split(/\r?\n/).map(s => s.trim());
+}
+
+async function getOrFetchAutoTranslations(songId, jpLines) {
+  if (!jpLines.length) return [];
+  const cachedRaw = safeGet(`${AUTO_TR_CACHE_PREFIX}${songId}`);
+  if (cachedRaw) {
+    try {
+      const cached = JSON.parse(cachedRaw);
+      if (Array.isArray(cached) && cached.length === jpLines.length) return cached;
+    } catch (e) {}
+  }
+
+  const result = [];
+  const CHUNK_SIZE = 20;
+  try {
+    for (let i = 0; i < jpLines.length; i += CHUNK_SIZE) {
+      const chunk = jpLines.slice(i, i + CHUNK_SIZE);
+      const translated = await translateChunkToZhTw(chunk);
+      for (let j = 0; j < chunk.length; j++) {
+        result.push(translated[j] || "");
+      }
+    }
+    if (result.some(Boolean)) {
+      safeSet(`${AUTO_TR_CACHE_PREFIX}${songId}`, JSON.stringify(result));
+      return result;
+    }
+  } catch (e) {}
+  return [];
+}
+
+export async function hydrateFullLyricsForSong(song, expectedDuration = null) {
+  if (!song) return { updated: false, source: "starter", count: 0 };
   if (!song._starterLyrics) {
     song._starterLyrics = (song.lyrics || []).map(l => ({ ...l }));
   }
@@ -172,7 +239,7 @@ export async function hydrateFullLyricsForSong(song) {
   const customTr = getSavedCustomTr(song.id);
   const customLrc = getSavedCustomLrc(song.id);
 
-  // 1. User's custom LRC takes highest priority
+  // 1. User custom LRC
   if (customLrc) {
     const parsed = parseLrcToSongLines(customLrc, song._starterLyrics, customTr);
     if (parsed.length > 0) {
@@ -182,33 +249,41 @@ export async function hydrateFullLyricsForSong(song) {
     }
   }
 
-  // 2. Cached LRCLIB full synced lyrics
+  // 2. Cached or live LRCLIB full synced lyrics
   let lrcText = safeGet(`${LRC_CACHE_PREFIX}${song.id}`);
   let fromCache = Boolean(lrcText);
-
-  // 3. Fetch live from LRCLIB if not cached
   if (!lrcText) {
     const trackName = (song.titleJa || song.title || "").replace(/\s*\(.*?\)\s*$/, "").trim();
-    lrcText = await fetchSyncedLrcFromLrclib(trackName);
+    lrcText = await fetchSyncedLrcFromLrclib(trackName, expectedDuration);
     if (lrcText) {
       safeSet(`${LRC_CACHE_PREFIX}${song.id}`, lrcText);
     }
   }
 
   if (lrcText) {
-    const parsed = parseLrcToSongLines(lrcText, song._starterLyrics, customTr);
+    const preParsed = parseLrcToSongLines(lrcText, song._starterLyrics, customTr);
+    let autoTr = [];
+    if (!customTr && preParsed.length > 0) {
+      autoTr = await getOrFetchAutoTranslations(song.id, preParsed.map(l => l.jp));
+    }
+    const parsed = parseLrcToSongLines(lrcText, song._starterLyrics, customTr, autoTr);
     if (parsed.length > 0) {
       song.lyrics = parsed;
       song._dynamicFullLyrics = true;
-      return { updated: true, source: fromCache ? "LRCLIB（離線快取）" : "LRCLIB 完整同步歌詞", count: parsed.length };
+      const hasZh = parsed.some(l => l.tr);
+      const label = fromCache ? "LRCLIB 快取" : "LRCLIB";
+      return {
+        updated: true,
+        source: hasZh ? `${label}＋繁中翻譯` : label,
+        count: parsed.length,
+      };
     }
   }
 
-  // Fallback to starter lyrics (still apply custom translations if user pasted them)
   if (customTr) {
     const trLines = customTr.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     song.lyrics = song._starterLyrics.map((l, i) => ({ ...l, tr: trLines[i] || l.tr }));
-    return { updated: true, source: "內建歌詞 + 自訂中譯", count: song.lyrics.length };
+    return { updated: true, source: "內建歌詞＋自訂中譯", count: song.lyrics.length };
   }
 
   song.lyrics = song._starterLyrics.map(l => ({ ...l }));
