@@ -294,7 +294,7 @@ export function createVideoPip({
       if (typeof MediaMetadata === "function" && model.title){
         const current = session.metadata;
         if (!current || current.title !== model.title){
-          session.metadata = new MediaMetadata({ title: model.title, artist: "Vaundy" });
+          session.metadata = new MediaMetadata({ title: model.title, artist: "YOASOBI" });
         }
       }
       session.playbackState = model.isPlaying ? "playing" : "paused";

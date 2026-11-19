@@ -1,11 +1,11 @@
 // Fan-run support-goods board backed by a self-hosted Waline server.
 // Leave SUPPORT_BOARD_SERVER_URL empty to show a "coming soon" note instead
 // of loading the comment client.
-export const SUPPORT_BOARD_SERVER_URL = "https://vaundy-waline.vercel.app";
+export const SUPPORT_BOARD_SERVER_URL = "";
 
 // Cloudflare Worker + R2 that stores chat images (see docs/support-board.md).
 // Leave empty to hide the image button.
-export const SUPPORT_BOARD_IMAGE_URL = "https://vaundy-chat-images.watain666666.workers.dev";
+export const SUPPORT_BOARD_IMAGE_URL = "";
 
 // Fixed thread key so every page and hash route shares one board.
 const SUPPORT_BOARD_PATH = "/support-goods";

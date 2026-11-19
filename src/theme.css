@@ -1358,3 +1358,42 @@ button{touch-action:manipulation;}
 .song-page .settings-option-icon svg{display:block;width:16px;height:16px;}
 /* 面板打開時焦點放在面板本身（給鍵盤與報讀器），不畫外框。 */
 .song-page .song-sheet-panel:focus{outline:none;}
+
+/* YOASOBI Karaoke offset & custom LRC modal */
+.yoasobi-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.offset-control { display: inline-flex; align-items: center; gap: 4px; background: rgba(128,128,128,0.12); padding: 2px 6px; border-radius: 999px; }
+.offset-label { font-size: 11px; opacity: 0.75; margin-right: 2px; }
+.offset-btn, .offset-val {
+  border: 1px solid rgba(148,163,184,0.3);
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.offset-btn:hover, .offset-val:hover { background: rgba(236,72,153,0.18); border-color: rgba(236,72,153,0.5); }
+.offset-btn.primary { background: #ec4899; color: #fff; border-color: #ec4899; }
+.yoasobi-lrc-modal[hidden] { display: none; }
+.yoasobi-lrc-modal {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(9, 13, 31, 0.72); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.yoasobi-lrc-dialog {
+  width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto;
+  background: var(--bg, #111827); color: var(--fg, #f8fafc);
+  border: 1px solid rgba(148,163,184,0.28); border-radius: 16px; padding: 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+}
+.yoasobi-lrc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.yoasobi-lrc-hint { font-size: 12px; opacity: 0.8; line-height: 1.5; margin: 0 0 12px; }
+.yoasobi-lrc-label { display: block; font-size: 12px; font-weight: 700; margin: 8px 0 4px; }
+.yoasobi-lrc-textarea {
+  width: 100%; box-sizing: border-box; border-radius: 10px; padding: 10px;
+  border: 1px solid rgba(148,163,184,0.35); background: rgba(0,0,0,0.2);
+  color: inherit; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+}
+.yoasobi-lrc-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 14px; }
+.yoasobi-lrc-actions-right { display: flex; gap: 8px; }

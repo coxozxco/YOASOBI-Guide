@@ -129,10 +129,13 @@ export function isLiveActive(song: { live?: readonly unknown[] } | null | undefi
  */
 export function liveKaraokeTiming(song: Song | null | undefined, chantVersion: string = "jp"): AlignedKaraokeTiming | null {
   const live = pickLiveVideo(song, chantVersion);
-  if (!song || !live || !Array.isArray(live.times) || live.times.length !== song.lyrics.length) return null;
-  const lines = live.times.map((start, index): TimedLine => ({
+  if (!song || !live || !Array.isArray(song.lyrics) || !song.lyrics.length) return null;
+  const times = Array.isArray(live.times) && live.times.length === song.lyrics.length
+    ? live.times
+    : song.lyrics.map(line => Number(line.time) || 0);
+  const lines = times.map((start, index): TimedLine => ({
     start,
-    end: index + 1 < live.times.length ? live.times[index + 1] : start + LIVE_LAST_ROW_SEC,
+    end: index + 1 < times.length ? Math.max(start + 0.3, times[index + 1]) : start + LIVE_LAST_ROW_SEC,
     granularity: "line",
   }));
   return {
@@ -149,7 +152,7 @@ export function liveKaraokeTiming(song: Song | null | undefined, chantVersion: s
 }
 
 export function liveStatusText(label: string): string {
-  return `歌詞時間：現場版（${label}）逐行對時，卡拉 OK 在每行內平均推進`;
+  return `歌詞時間：${label}（共 同步逐行對時，卡拉 OK 在每行內平均推進）`;
 }
 
 export function bundledStatusText(timing: AlignedKaraokeTiming): string {

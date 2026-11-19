@@ -57,6 +57,17 @@ import {
   liveStatusText,
   loadSongKaraokeTiming
 } from "./services/karaoke-timing.ts";
+import {
+  hydrateFullLyricsForSong,
+  buildLineKaraokeTiming,
+  getLyricOffset,
+  setLyricOffset,
+  getSavedCustomTr,
+  getSavedCustomLrc,
+  saveCustomTranslations,
+  saveCustomLrc,
+  clearCachedLrclib
+} from "./services/lrclib-lyrics.js";
 import { loadJapaneseFontSubset } from "./services/japanese-font.js";
 import { syncSupportChat } from "./ui/support-chat.js";
 import { store } from "./services/storage.js";
@@ -1568,7 +1579,7 @@ function setupHomeExtras(){
   if (shareBtn){
     shareBtn.addEventListener("click", async ()=>{
       const data = {
-        title: "VAUNDY \"HORO\" TAIPEI 應援指南",
+        title: "YOASOBI 卡拉 OK 練唱本",
         text: "搭配影片查看各曲歌詞與大合唱、拍手、揮手重點",
         url: location.href.split("#")[0]
       };
@@ -1799,6 +1810,11 @@ function startCountdown(){
     start: new Date(v.start).getTime(),
     end:   new Date(v.end).getTime()
   }));
+  if (!shows.length){
+    const box = document.getElementById("countdown");
+    if (box) box.hidden = true;
+    return;
+  }
   const finalEnd = shows[shows.length - 1].end;
 
   function tick(){
@@ -2056,19 +2072,40 @@ function buildSongShell(){
                   <button type="button" class="chant-version-option" data-video-source="mv" aria-pressed="true">原唱 MV</button>
                   <button type="button" class="chant-version-option" data-video-source="live" aria-pressed="false">卡拉 OK</button>
                 </div>
-                <div class="lyrics-legend">
-                  <span class="legend-item"><span class="legend-icon chant">${INLINE_ICONS.mic}</span>大合唱</span>
-                  <span class="legend-item"><span class="legend-icon clap">${INLINE_ICONS.clap}</span>拍手</span>
-                  <span class="legend-item"><span class="legend-icon wave">${INLINE_ICONS.wave}</span>揮手</span>
-                  <button type="button" class="chant-notes-toggle" id="chant-notes-toggle" aria-expanded="false" aria-controls="chant-notes" title="查看這首歌的日本版應援提示" hidden>
-                    <span class="chant-notes-label">應援說明</span><span class="chant-notes-chevron" aria-hidden="true">${CHEVRON_SVG}</span>
-                  </button>
+                <div class="lyrics-legend yoasobi-tools">
+                  <div class="offset-control" role="group" aria-label="歌詞時間微調">
+                    <span class="offset-label">對時</span>
+                    <button type="button" class="offset-btn" data-offset-delta="-0.5" title="歌詞提早 0.5 秒">-0.5s</button>
+                    <button type="button" class="offset-val" id="lyric-offset-val" data-offset-delta="reset" title="點擊歸零">0.0s</button>
+                    <button type="button" class="offset-btn" data-offset-delta="0.5" title="歌詞延後 0.5 秒">+0.5s</button>
+                  </div>
+                  <button type="button" class="offset-btn lrc-edit-trigger" id="lrc-edit-open-btn" title="貼上中文翻譯或完整 LRC 歌詞">中譯 / LRC</button>
+                  <button type="button" class="chant-notes-toggle" id="chant-notes-toggle" aria-expanded="false" aria-controls="chant-notes" hidden></button>
                 </div>
               </div>
             </div>
             <div class="chant-notes-panel" id="chant-notes" hidden>
               <ul class="chant-notes-list" id="chant-notes-list"></ul>
-              <a href="${CHANT_REFERENCE_URL}" target="_blank" rel="noopener">Canva《VAUNDY 應援教學》↗</a>
+            </div>
+            <div class="yoasobi-lrc-modal" id="yoasobi-lrc-modal" hidden>
+              <div class="yoasobi-lrc-dialog" role="dialog" aria-modal="true" aria-labelledby="yoasobi-lrc-title">
+                <div class="yoasobi-lrc-head">
+                  <strong id="yoasobi-lrc-title">自訂中文翻譯 / LRC 歌詞</strong>
+                  <button type="button" class="offset-btn" id="lrc-edit-close-btn" aria-label="關閉">✕</button>
+                </div>
+                <p class="yoasobi-lrc-hint">貼上<b>逐行中文翻譯</b>（一行對應右側一句日文歌詞），或直接貼上含 <code>[mm:ss.xx] 日文 | 中文</code> 的完整 LRC 檔案，儲存於本機瀏覽器。</p>
+                <label class="yoasobi-lrc-label" for="yoasobi-tr-input">逐行繁體中文翻譯（可留空）</label>
+                <textarea id="yoasobi-tr-input" class="yoasobi-lrc-textarea" rows="5" placeholder="一行一句中文翻譯，將自動對應到目前歌曲的每一句日文歌詞..."></textarea>
+                <label class="yoasobi-lrc-label" for="yoasobi-lrc-input">自訂完整 LRC 時間軸（選填，有填將覆蓋 LRCLIB）</label>
+                <textarea id="yoasobi-lrc-input" class="yoasobi-lrc-textarea" rows="5" placeholder="[00:11.50] 無敵の笑顔で荒らすメディア | 以無敵的笑容席捲各大媒體"></textarea>
+                <div class="yoasobi-lrc-actions">
+                  <button type="button" class="offset-btn" id="lrc-refresh-lrclib-btn">重新抓 LRCLIB</button>
+                  <div class="yoasobi-lrc-actions-right">
+                    <button type="button" class="offset-btn" id="lrc-edit-cancel-btn">取消</button>
+                    <button type="button" class="offset-btn primary" id="lrc-edit-save-btn">套用並儲存</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2337,9 +2374,47 @@ function buildSongShell(){
   document.getElementById("lyrics-list").addEventListener("click", (e)=>{
     const btn = e.target.closest(".lyric-line");
     if (!btn) return;
-    seekTo(Number(btn.dataset.time));
-    // 떼창만 듣기 중에는 탭한 자리에서 판단을 다시 하도록 잠깐 여유를 준다
+    const rawTarget = Math.max(0, Number(btn.dataset.time) - currentLyricOffset());
+    seekTo(rawTarget);
     if (chantOnly){ chantDone = false; chantExpect(Number(btn.dataset.time)); }
+  });
+
+  songView.querySelectorAll("[data-offset-delta]").forEach(btn => {
+    btn.addEventListener("click", ()=>{
+      if (!currentSong) return;
+      const mode = sourceOf(currentSong);
+      const delta = btn.dataset.offsetDelta;
+      const next = delta === "reset" ? 0 : getLyricOffset(currentSong.id, mode) + Number(delta);
+      setLyricOffset(currentSong.id, mode, next);
+      updateLyricOffsetUi();
+      updateLyricsSync(true);
+    });
+  });
+
+  const lrcModal = document.getElementById("yoasobi-lrc-modal");
+  const trInput = document.getElementById("yoasobi-tr-input");
+  const lrcInput = document.getElementById("yoasobi-lrc-input");
+  const closeLrcModal = () => { if (lrcModal) lrcModal.hidden = true; };
+  document.getElementById("lrc-edit-open-btn")?.addEventListener("click", ()=>{
+    if (!currentSong || !lrcModal) return;
+    trInput.value = getSavedCustomTr(currentSong.id);
+    lrcInput.value = getSavedCustomLrc(currentSong.id);
+    lrcModal.hidden = false;
+  });
+  document.getElementById("lrc-edit-close-btn")?.addEventListener("click", closeLrcModal);
+  document.getElementById("lrc-edit-cancel-btn")?.addEventListener("click", closeLrcModal);
+  document.getElementById("lrc-refresh-lrclib-btn")?.addEventListener("click", async ()=>{
+    if (!currentSong) return;
+    clearCachedLrclib(currentSong.id);
+    closeLrcModal();
+    await loadKaraokeTiming(currentSong);
+  });
+  document.getElementById("lrc-edit-save-btn")?.addEventListener("click", async ()=>{
+    if (!currentSong) return;
+    saveCustomTranslations(currentSong.id, trInput.value);
+    saveCustomLrc(currentSong.id, lrcInput.value);
+    closeLrcModal();
+    await loadKaraokeTiming(currentSong);
   });
 
   /* 단축모드 — 영상을 감추고 발음 가사만 크게.
@@ -3739,51 +3814,70 @@ function applyVideoSourceUi(){
 }
 
 /* 換影片來源：影片、歌詞行時間、逐字時間與應援索引一起換。 */
+function currentLyricOffset(){
+  if (!currentSong) return 0;
+  return getLyricOffset(currentSong.id, sourceOf(currentSong));
+}
+
+function updateLyricOffsetUi(){
+  const el = document.getElementById("lyric-offset-val");
+  if (!el) return;
+  const off = currentLyricOffset();
+  el.textContent = `${off > 0 ? "+" : ""}${off.toFixed(1)}s`;
+}
+
 function switchVideoSource(){
   const song = currentSong;
   if (!song) return;
   applyVideoSourceUi();
-  karaokeLoadSeq++;                       // 丟掉尚未完成的網路逐字回應
-  karaokeTiming = liveActive(song) ? liveKaraokeTiming(song, chantVersion) : null;
+  updateLyricOffsetUi();
+  karaokeLoadSeq++;
   chantIdx = -1; chantDone = false; chantWantSec = null; chantWaitUntil = 0;
   lastActiveIdx = -1;
   playheadTime = null;
   openSongVideo(videoIdOf(song));
-  if (liveActive(song)) setKaraokeSourceStatus("ready", liveStatusText(liveVideoOf(song).label));
-  else loadKaraokeTiming(song);
+  loadKaraokeTiming(song);
+}
+
+async function loadKaraokeTiming(song){
+  const seq = ++karaokeLoadSeq;
+  updateLyricOffsetUi();
+  setKaraokeSourceStatus("loading", "正在從 LRCLIB 載入完整同步歌詞…");
+
+  const hydrated = await hydrateFullLyricsForSong(song);
+  if (seq !== karaokeLoadSeq || !song || currentSong !== song) return;
+
+  if (liveActive(song)){
+    karaokeTiming = liveKaraokeTiming(song, chantVersion) || buildLineKaraokeTiming(song, hydrated.source);
+    const label = liveVideoOf(song)?.label || "卡拉 OK 伴奏";
+    setKaraokeSourceStatus("ready", `${label}・已載入 ${song.lyrics.length} 句同步歌詞（${hydrated.source}）`);
+    renderSongLyrics();
+    syncChantUi();
+    paintChantBar();
+    updateLyricsSync(true);
+    return;
+  }
+
+  // Original MV mode: start moving immediately with line timing, then try word-level upgrade
+  karaokeTiming = buildLineKaraokeTiming(song, hydrated.source);
+  setKaraokeSourceStatus("ready", `原唱 MV・已載入 ${song.lyrics.length} 句同步歌詞（${hydrated.source}）`);
   renderSongLyrics();
   syncChantUi();
   paintChantBar();
   updateLyricsSync(true);
-}
 
-/* 有內建逐字時間的歌直接用歌曲目錄裡的時間（不連網、離線可用）；
-   其他歌照舊由 karaoke-sources.js 連網查詢後對齊。 */
-async function loadKaraokeTiming(song){
-  const seq = ++karaokeLoadSeq;
-  if (liveActive(song)){
-    // 現場版只有逐行時間；錄音室的逐字時間與網路來源都不能套在現場影片上。
-    karaokeTiming = liveKaraokeTiming(song, chantVersion);
-    setKaraokeSourceStatus("ready", liveStatusText(liveVideoOf(song).label));
-    return;
-  }
-  karaokeTiming = null;
   const result = await loadSongKaraokeTiming(song, {
     loadSources: loadKaraokeSources,
     duration: getPlayerDuration,
-    onStatus: status => {
-      if (seq === karaokeLoadSeq) setKaraokeSourceStatus(status.state, status.text);
-    }
+    onStatus: () => {}
   });
   if (seq !== karaokeLoadSeq || !song || currentSong !== song) return;
-
-  setKaraokeSourceStatus(result.status.state, result.status.text);
-  if (!result.timing) return;
-  karaokeTiming = result.timing;
-  renderSongLyrics();
-  syncChantUi();
-  paintChantBar();
-  updateLyricsSync(true);
+  if (result && result.timing && result.timing.matchedLines > 0){
+    karaokeTiming = result.timing;
+    setKaraokeSourceStatus(result.status.state, result.status.text);
+    renderSongLyrics();
+    updateLyricsSync(true);
+  }
 }
 
 /* ── 곡 목록 정렬 ─────────────────────────────────────────────
@@ -4251,7 +4345,7 @@ function updateLyricsSync(force) {
 
   const playerTime = getPlayerTime();
   // 실제 재생 위치보다 조금 앞선 시점을 기준으로 판단해 가사를 먼저 넘김
-  const cur = playerTime === null ? null : playerTime + LYRIC_LEAD_SEC;
+  const cur = playerTime === null ? null : playerTime + LYRIC_LEAD_SEC + currentLyricOffset();
 
   // 떼창만 듣기 — 구간을 벗어났으면 다음 떼창으로 옮긴다
   chantOnlyTick(cur);
