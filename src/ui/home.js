@@ -7,8 +7,8 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
     <section class="hero">
       ${themeToggle}
       <div class="hero-inner">
-        <div class="eyebrow">ASIA ARENA TOUR 2026</div>
-        <h1 class="tour-title"><span>VAUNDY</span>&ldquo;HORO&rdquo;</h1>
+        <div class="eyebrow">KARAOKE PRACTICE GUIDE</div>
+        <h1 class="tour-title"><span>YOASOBI</span> 卡拉 OK 練唱</h1>
 
         <div class="countdown" id="countdown">
           <div class="cd-pill">
@@ -63,7 +63,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
             <div class="info-panel-title"><span class="bar">|</span> 演出概要 <span class="bar">|</span></div>
             <dl class="info-facts">
               <dt>演出名稱</dt>
-              <dd>Vaundy ASIA ARENA TOUR 2026 &ldquo;HORO&rdquo; IN TAIPEI</dd>
+              <dd>YOASOBI KARAOKE PRACTICE GUIDE &ldquo;HORO&rdquo; IN TAIPEI</dd>
 
               <dt>日期／時間</dt>
               <dd>
@@ -159,7 +159,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
                     <td class="note" data-label="備註">11:00 整隊・11:30 發號碼牌</td>
                   </tr>
                   <tr>
-                    <td class="label" data-label="項目">VAUNDY 燈牌</td>
+                    <td class="label" data-label="項目">YOASOBI 燈牌</td>
                     <td data-label="10/31（六）">12:00–21:00</td>
                     <td data-label="11/1（日）">12:00–21:00</td>
                     <td class="note" data-label="備註">位置見公告・指南的配置圖</td>
@@ -226,7 +226,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
             <p class="way-note">台北場最新官方舞台／座位配置圖：</p>
             <div class="seat-wrap">
               <a class="seat-map-link" href="./images/taipei-stage-map.webp" target="_blank" rel="noopener">
-                <img class="seat-map-image" data-src="./images/taipei-stage-map-preview.webp" width="2772" height="3681" alt="Vaundy ASIA ARENA TOUR 2026「HORO」台北場台北小巨蛋舞台與座位配置圖，含各區票價；點擊查看原尺寸" loading="lazy" decoding="async">
+                <img class="seat-map-image" data-src="./images/taipei-stage-map-preview.webp" width="2772" height="3681" alt="YOASOBI KARAOKE PRACTICE GUIDE「HORO」台北場台北小巨蛋舞台與座位配置圖，含各區票價；點擊查看原尺寸" loading="lazy" decoding="async">
               </a>
               <p class="seat-map-caption">點擊圖片可放大查看原尺寸。</p>
             </div>
@@ -456,7 +456,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
             <div class="way-sec">
               <h4>AR 相機 <span>不限會員</span></h4>
               <ul class="way-ul">
-                <li>安裝 <b>Vaundy OFFICIAL APP</b> 即可使用，請先更新到最新版本</li>
+                <li>安裝 <b>YOASOBI OFFICIAL APP</b> 即可使用，請先更新到最新版本</li>
                 <li><b>會場限定 AR 相機</b>：到場後開啟 APP 點「AR」→ 左上角相機圖示 → 掃描會場面板上的標記，就能和<b>巡演 Logo</b> 合影。每個公演日會出現不同的限定顏色</li>
                 <li><b>隨處 AR 相機</b>：在左上角選單（三條線）選「無標記」再點「播放」，巡演期間隨時都能拍</li>
                 <li>點畫面左下角的灰色相機圖示可切換前／後鏡頭；多個 AR 圖像重疊時可自行拖曳位置</li>

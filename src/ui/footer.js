@@ -11,8 +11,8 @@ export function siteFooterHtml(build){
     <footer class="credits">
       <nav class="credits-links" aria-label="專案連結">
         <p class="credits-copy">
-          <span class="credits-copy-desktop">VAUNDY ASIA ARENA TOUR 2026 &ldquo;HORO&rdquo;・TAIWAN FAN CHANT GUIDE（非官方粉絲製作）</span>
-          <span class="credits-copy-mobile">VAUNDY ASIA ARENA TOUR 2026 &ldquo;HORO&rdquo;<br>TAIWAN FAN CHANT GUIDE（非官方粉絲製作）</span>
+          <span class="credits-copy-desktop">VAUNDY ASIA ARENA TOUR 2026 &ldquo;HORO&rdquo;・KARAOKE PRACTICE GUIDE（非官方粉絲製作）</span>
+          <span class="credits-copy-mobile">VAUNDY ASIA ARENA TOUR 2026 &ldquo;HORO&rdquo;<br>KARAOKE PRACTICE GUIDE（非官方粉絲製作）</span>
           <span class="build">${build}</span>
         </p>
         <span class="credits-origin">
