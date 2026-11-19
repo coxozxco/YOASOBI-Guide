@@ -191,5 +191,5 @@ export const JP_CHANT_GUIDES = {
     ]
   }
 };
-export const CHANT_DIFFERENCES = [];
+
 export const CHANT_DIFFERENCES = [];
