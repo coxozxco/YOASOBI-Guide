@@ -64,7 +64,7 @@ function copyRootStaticAssets(): Plugin {
       if (error) return;
       if (!graph) this.error("copy-root-static-assets: no output bundle was written");
       const outputDir = resolve("dist");
-      ["CNAME", "sw.js", "manifest.json", "robots.txt", "sitemap.xml", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"]
+      ["sw.js", "manifest.json", "robots.txt", "sitemap.xml", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"]
         .forEach(file => cpSync(resolve(file), resolve(outputDir, file)));
       cpSync(resolve("images"), resolve(outputDir, "images"), { recursive: true });
 
