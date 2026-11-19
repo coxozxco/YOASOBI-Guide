@@ -1,10 +1,10 @@
 /*
- * Live full-lyrics loader (LRCLIB) + automatic Traditional Chinese & Romaji (Kanji-aware)
+ * Live full-lyrics loader (LRCLIB) + 1-to-1 aligned Traditional Chinese & Romaji
  * + per-song time offset + custom Chinese/LRC storage.
  */
 
 const LRC_CACHE_PREFIX = "yoasobi-lrc-full-v2:";
-const AUTO_META_CACHE_PREFIX = "yoasobi-auto-tr-rm-v2:";
+const AUTO_META_CACHE_PREFIX = "yoasobi-auto-tr-rm-v3:";
 const CUSTOM_LRC_PREFIX = "yoasobi-custom-lrc-v1:";
 const CUSTOM_TR_PREFIX = "yoasobi-custom-tr-v1:";
 const OFFSET_PREFIX = "yoasobi-offset-v1:";
@@ -194,28 +194,34 @@ async function fetchSyncedLrcFromLrclib(trackName, expectedDuration) {
   return null;
 }
 
-async function translateAndRomanizeChunk(lines) {
-  if (!lines.length) return { tr: [], rm: [] };
-  const joined = lines.join("\n");
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=zh-TW&dt=t&dt=rm&q=${encodeURIComponent(joined)}`;
-  const res = await fetch(url);
-  if (!res.ok) return { tr: [], rm: [] };
-  const data = await res.json();
-  if (!Array.isArray(data) || !Array.isArray(data[0])) return { tr: [], rm: [] };
+// Fetch exact 1-to-1 Traditional Chinese & Romaji for ONE single Japanese line
+async function fetchSingleLineMeta(jpLine) {
+  const clean = String(jpLine || "").trim();
+  if (!clean) return { tr: "", rm: "" };
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=zh-TW&dt=t&dt=rm&q=${encodeURIComponent(clean)}`;
+    const res = await fetch(url);
+    if (!res.ok) return { tr: "", rm: "" };
+    const data = await res.json();
+    if (!Array.isArray(data) || !Array.isArray(data[0])) return { tr: "", rm: "" };
 
-  const trJoined = data[0]
-    .filter(seg => Array.isArray(seg) && typeof seg[0] === "string")
-    .map(seg => seg[0])
-    .join("");
+    const tr = data[0]
+      .filter(seg => Array.isArray(seg) && typeof seg[0] === "string")
+      .map(seg => seg[0])
+      .join("")
+      .trim();
 
-  const rmJoined = data[0]
-    .filter(seg => Array.isArray(seg) && typeof seg[3] === "string" && seg[3].trim())
-    .map(seg => seg[3])
-    .join("\n");
+    const rm = data[0]
+      .filter(seg => Array.isArray(seg) && typeof seg[3] === "string" && seg[3].trim())
+      .map(seg => seg[3].trim())
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
 
-  const tr = trJoined.split(/\r?\n/).map(s => s.trim());
-  const rm = rmJoined.split(/\r?\n/).map(s => s.trim());
-  return { tr, rm };
+    return { tr, rm };
+  } catch (e) {
+    return { tr: "", rm: "" };
+  }
 }
 
 async function getOrFetchAutoMeta(songId, jpLines) {
@@ -236,24 +242,30 @@ async function getOrFetchAutoMeta(songId, jpLines) {
     } catch (e) {}
   }
 
-  const trAll = [];
-  const rmAll = [];
-  const CHUNK_SIZE = 15;
-  try {
-    for (let i = 0; i < jpLines.length; i += CHUNK_SIZE) {
-      const chunk = jpLines.slice(i, i + CHUNK_SIZE);
-      const { tr, rm } = await translateAndRomanizeChunk(chunk);
-      for (let j = 0; j < chunk.length; j++) {
-        trAll.push(tr[j] || "");
-        rmAll.push(rm[j] || "");
-      }
+  // Deduplicate identical lines (e.g. repeated chorus) so fetching is fast while staying 100% 1-to-1 aligned
+  const uniqueLines = [...new Set(jpLines.map(s => String(s || "").trim()).filter(Boolean))];
+  const metaMap = new Map();
+  const CONCURRENCY = 6;
+  let cursor = 0;
+
+  async function worker() {
+    while (cursor < uniqueLines.length) {
+      const line = uniqueLines[cursor++];
+      const meta = await fetchSingleLineMeta(line);
+      metaMap.set(line, meta);
     }
-    if (trAll.some(Boolean) || rmAll.some(Boolean)) {
-      const payload = { tr: trAll, rm: rmAll };
-      safeSet(`${AUTO_META_CACHE_PREFIX}${songId}`, JSON.stringify(payload));
-      return payload;
-    }
-  } catch (e) {}
+  }
+
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, uniqueLines.length) }, () => worker()));
+
+  const trAll = jpLines.map(s => (metaMap.get(String(s || "").trim())?.tr || ""));
+  const rmAll = jpLines.map(s => (metaMap.get(String(s || "").trim())?.rm || ""));
+
+  if (trAll.some(Boolean) || rmAll.some(Boolean)) {
+    const payload = { tr: trAll, rm: rmAll };
+    safeSet(`${AUTO_META_CACHE_PREFIX}${songId}`, JSON.stringify(payload));
+    return payload;
+  }
   return { tr: [], rm: [] };
 }
 
@@ -266,7 +278,6 @@ export async function hydrateFullLyricsForSong(song, expectedDuration = null) {
   const customTr = getSavedCustomTr(song.id);
   const customLrc = getSavedCustomLrc(song.id);
 
-  // 1. User custom LRC
   if (customLrc) {
     const preCustom = parseLrcToSongLines(customLrc, song._starterLyrics, customTr);
     const autoMeta = await getOrFetchAutoMeta(`${song.id}:custom`, preCustom.map(l => l.jp));
@@ -278,7 +289,6 @@ export async function hydrateFullLyricsForSong(song, expectedDuration = null) {
     }
   }
 
-  // 2. Cached or live LRCLIB full synced lyrics
   let lrcText = safeGet(`${LRC_CACHE_PREFIX}${song.id}`);
   let fromCache = Boolean(lrcText);
   if (!lrcText) {

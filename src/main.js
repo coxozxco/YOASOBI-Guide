@@ -1140,8 +1140,35 @@ function renderHome(){
   }
   canReuseHome = false;
 
-  document.getElementById("songs-btn").addEventListener("click", ()=>{ location.hash = "#/guide"; });
-  document.getElementById("setlist-btn").addEventListener("click", ()=>{ location.hash = "#/setlist"; });
+  document.getElementById("songs-btn")?.addEventListener("click", ()=>{ location.hash = "#/guide"; });
+  document.getElementById("setlist-btn")?.addEventListener("click", ()=>{ location.hash = "#/setlist"; });
+  const homeSearch = document.getElementById("home-quick-search");
+  if (homeSearch){
+    const allSongs = listSongs();
+    const chipRow = document.getElementById("home-chip-row");
+    homeSearch.addEventListener("input", ()=>{
+      const q = homeSearch.value.trim().toLowerCase();
+      if (!chipRow) return;
+      if (!q){
+        chipRow.querySelectorAll(".gm-chip").forEach(a => { a.hidden = false; });
+        return;
+      }
+      const matched = allSongs.filter(s => s.title.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)).slice(0, 8);
+      if (matched.length){
+        chipRow.innerHTML = matched.map(s => `<a class="gm-chip" href="#/song/${s.id}">${escapeHtml(s.title)}</a>`).join("");
+      } else {
+        chipRow.innerHTML = `<span class="gm-chip-empty">找不到符合的歌曲</span>`;
+      }
+    });
+    homeSearch.addEventListener("keydown", (e)=>{
+      if (e.key !== "Enter") return;
+      const q = homeSearch.value.trim().toLowerCase();
+      if (!q){ location.hash = "#/setlist"; return; }
+      const hit = allSongs.find(s => s.title.toLowerCase().includes(q) || s.id.toLowerCase().includes(q));
+      if (hit) location.hash = `#/song/${hit.id}`;
+      else location.hash = "#/guide";
+    });
+  }
   setupAccordions();
   setupNoticeViewer();
   setupSeatMap();
